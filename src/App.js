@@ -1,8 +1,7 @@
-import { useMemo, useEffect, useRef, useState } from 'react';
+import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import './App.css';
 import DiaryEditor from './DiaryEditor';
 import DiaryList from './DiaryList';
-import OptimizeTest from './OptimizeTest';
 
 function App() {
   // API 호출 함수
@@ -33,19 +32,22 @@ function App() {
 
   const dataId = useRef(0);
 
-  const onCreate = (author, content, emotion) => {
-    const create_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      create_date,
-      id: dataId.current, // 0 을 가리킨다.
-    };
+  const onCreate = useCallback(
+    (author, content, emotion) => {
+      const create_date = new Date().getTime();
+      const newItem = {
+        author,
+        content,
+        emotion,
+        create_date,
+        id: dataId.current, // 0 을 가리킨다.
+      };
 
-    dataId.current += 1; // id 의 값이 1씩 증가한다.
-    setData([newItem, ...data]); // 새로운 아이템이 위로 올라오게 하기 위해서 newItem 을 먼저 사용
-  };
+      dataId.current += 1; // id 의 값이 1씩 증가한다.
+      setData((data) => [newItem, ...data]); // 새로운 아이템이 위로 올라오게 하기 위해서 newItem 을 먼저 사용
+    },
+    [data]
+  );
 
   const onRemove = (targetId) => {
     const newDiaryList = data.filter((it) => it.id !== targetId);
@@ -71,7 +73,6 @@ function App() {
 
   return (
     <div className="App">
-      <OptimizeTest />
       <DiaryEditor onCreate={onCreate} />
       <div>전체 일기 : {data.length}</div>
       <div>기분 좋은 일기 개수 : {goodCount}</div>
