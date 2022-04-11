@@ -1,4 +1,10 @@
-import { useMemo, useEffect, useRef, useCallback, useReducer } from 'react';
+import React, {
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+  useReducer,
+} from 'react';
 import './App.css';
 import DiaryEditor from './DiaryEditor';
 import DiaryList from './DiaryList';
@@ -30,9 +36,12 @@ const reducer = (state, action) => {
   }
 };
 
-function App() {
-  //const [data, setData] = useState([]); // state-배열로 저장할 예정 (리스트)
+// export 하는 이유는, 내보내줘야 다른 컴포넌트들이 접근이 가능 합니다.
+export const DiaryStateContext = React.createContext();
 
+export const DiaryDispatchContext = React.createContext();
+
+function App() {
   const [data, dispatch] = useReducer(reducer, []);
 
   const dataId = useRef(0);
@@ -80,6 +89,10 @@ function App() {
     dispatch({ type: 'EDIT', targetId, newContent });
   }, []);
 
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onRemove, onRemove };
+  }, []); // 재생성되지 않게 빈 배열 저달
+
   const getDiaryAnalysis = useMemo(() => {
     const goodCount = data.filter((it) => it.emotion >= 3).length;
     const badCount = data.length - goodCount;
@@ -90,14 +103,18 @@ function App() {
   const { goodCount, badCount, goodRatio } = getDiaryAnalysis; // 함수로 호출한 결과 값을 객체로 반환
 
   return (
-    <div className="App">
-      <DiaryEditor onCreate={onCreate} />
-      <div>전체 일기 : {data.length}</div>
-      <div>기분 좋은 일기 개수 : {goodCount}</div>
-      <div>기분 나쁜 일기 개수 : {badCount}</div>
-      <div>기분 좋은 일기 비율 : {goodRatio}</div>
-      <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
-    </div>
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDispatchContext value={memoizedDispatches}>
+        <div className="App">
+          <DiaryEditor onCreate={onCreate} />
+          <div>전체 일기 : {data.length}</div>
+          <div>기분 좋은 일기 개수 : {goodCount}</div>
+          <div>기분 나쁜 일기 개수 : {badCount}</div>
+          <div>기분 좋은 일기 비율 : {goodRatio}</div>
+          <DiaryList />
+        </div>
+      </DiaryDispatchContext>
+    </DiaryStateContext.Provider>
   );
 }
 
