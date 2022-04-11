@@ -1,8 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 
 const DiaryEditor = ({ onCreate }) => {
-  useEffect(() => console.log('diar')); // 2번 찍힌다.
-
   const authorInput = useRef();
   const contentInput = useRef();
 
